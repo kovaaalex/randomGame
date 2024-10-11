@@ -1,13 +1,26 @@
-import { board, numbers, size, insertRandomNumber, insertInBoard } from './innerBoard.js'
-const h5 = document.querySelector('h5')
+import { board, numbers, size, insertRandomNumber, insertInBoard, numberColor } from './innerBoard.js'
 const h4 = document.querySelector('h4')
+const h5 = document.querySelector('h5')
 const h6 = document.querySelector('h6')
+const restart = document.querySelector('.restart')
+const game__status = document.querySelector('.game__status')
 const bestResultsKey = 'bestResults'
+const moveAudio = new Audio('success.mp3')
+const loseAudio = new Audio('lose.mp3')
+
 let points = 2;
 let steps = 0;
 let max = 2
 let gameOver = false
-
+restart.addEventListener('click', () => {
+    gameOver = false
+    numbers.forEach(number => number.innerHTML = '')
+    points = 2
+    steps = 0
+    max = 2
+    insertRandomNumber()
+    insertRandomNumber()
+})
 function getLine(i, direction) {
     let line = [];
     if (direction === 'left' || direction === 'right') {
@@ -53,6 +66,7 @@ function setLine(i, filteredLine, direction) {
 }
 
 function move(direction) {
+    numbers.forEach(number => number.style.backgroundColor = '')
     if (gameOver) return
     let moved = false    
     for (let i = 0; i < size; i++) {
@@ -82,9 +96,12 @@ function move(direction) {
         h5.innerHTML = `Ходов: ${steps}`;
         h4.innerHTML = `Очков: ${points}`;
     }
+    numbers.forEach(number => number.style.backgroundColor = numberColor[+number.innerHTML])
     if (isGameOver()) {
         endGame()
+        loseAudio.play()
     }
+    else moveAudio.play()
 }
 function pressButton(event) {
     if (gameOver) return
@@ -124,15 +141,44 @@ function saveBestResults(results) {
     localStorage.setItem(bestResultsKey, JSON.stringify(results))
 }
 function updateBestResultsTable() {
-    const bestResults = getBestResults()
-    const resultsDiv = document.querySelector('#best__results')
-    resultsDiv.innerHTML = ''
-    bestResults.forEach((result, index) => {
-        const resultElement = document.createElement('p')
-        resultElement.textContent = `#${index + 1}: Очки: ${result.points}, Ходов: ${result.steps}, Макс. число: ${result.max}`
-        resultsDiv.appendChild(resultElement)
+    const bestResults = getBestResults();
+    const resultsDiv = document.querySelector('#best__results');
+    resultsDiv.innerHTML = ''; // Очищаем содержимое
+
+    // Создаем таблицу
+    const table = document.createElement('table');
+    table.setAttribute('border', '1'); // Для примера, создаем границу таблицы
+
+    // Создаем заголовок таблицы
+    const headerRow = document.createElement('tr');
+    const headers = ['Место', 'Очки', 'Ходов', 'Макс. число'];
+    headers.forEach(headerText => {
+        const header = document.createElement('th');
+        header.textContent = headerText;
+        headerRow.appendChild(header);
     });
+    table.appendChild(headerRow);
+
+    // Заполняем таблицу результатами
+    bestResults.forEach((result, index) => {
+        const row = document.createElement('tr');
+        const placeCell = document.createElement('td');
+        placeCell.textContent = `#${index + 1}`;
+        row.appendChild(placeCell);
+        const pointsCell = document.createElement('td');
+        pointsCell.textContent = result.points;
+        row.appendChild(pointsCell);
+        const stepsCell = document.createElement('td');
+        stepsCell.textContent = result.steps;
+        row.appendChild(stepsCell);
+        const maxCell = document.createElement('td');
+        maxCell.textContent = result.max;
+        row.appendChild(maxCell);
+        table.appendChild(row);
+    })
+    resultsDiv.appendChild(table);
 }
+
 function addCurrentResult() {
     const bestResults = getBestResults()
     bestResults.push({points, steps, max})
@@ -143,7 +189,7 @@ function addCurrentResult() {
     saveBestResults(bestResults)
 }
 function endGame() {
-    max < 2048 ? alert('lose') : alert('win')
+    max < 2048 ? game__status.innerHTML ='Вы проиграли' : game__status.innerHTML = 'Поздравляем, у вас 2048 очков'
     addCurrentResult()
     updateBestResultsTable()
     gameOver = true
