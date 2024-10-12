@@ -143,13 +143,9 @@ function saveBestResults(results) {
 function updateBestResultsTable() {
     const bestResults = getBestResults();
     const resultsDiv = document.querySelector('#best__results');
-    resultsDiv.innerHTML = ''; // Очищаем содержимое
-
-    // Создаем таблицу
+    resultsDiv.innerHTML = ''
     const table = document.createElement('table');
-    table.setAttribute('border', '1'); // Для примера, создаем границу таблицы
-
-    // Создаем заголовок таблицы
+    table.setAttribute('border', '1')
     const headerRow = document.createElement('tr');
     const headers = ['Место', 'Очки', 'Ходов', 'Макс. число'];
     headers.forEach(headerText => {
@@ -158,8 +154,6 @@ function updateBestResultsTable() {
         headerRow.appendChild(header);
     });
     table.appendChild(headerRow);
-
-    // Заполняем таблицу результатами
     bestResults.forEach((result, index) => {
         const row = document.createElement('tr');
         const placeCell = document.createElement('td');
